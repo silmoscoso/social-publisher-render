@@ -1,0 +1,19 @@
+{
+  "name": "social-publisher-render-server",
+  "version": "1.0.0",
+  "description": "Servidor FFmpeg gratuito para renderizar Historias, Reels y Carruseles de Social Publisher 360°",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dejavu-fonts-ttf": "^2.37.3",
+    "express": "^4.19.2",
+    "fluent-ffmpeg": "^2.1.3",
+    "multer": "^2.2.0"
+  }
+}
