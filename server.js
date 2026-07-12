@@ -215,7 +215,7 @@ app.post('/render', upload.fields([{ name: 'video', maxCount: 1 }, { name: 'audi
         cmd.noAudio();
       }
     } else {
-      cmd.input(videoFile.path).inputOptions([`-ss ${start}`]).duration(duration);
+      cmd.input(videoFile.path).inputOptions([`-ss ${start}`, '-threads 1']).duration(duration);
       if (audioFile) {
         cmd.input(audioFile.path);
         cmd.outputOptions(['-map 0:v:0', '-map 1:a:0', '-shortest']);
@@ -225,6 +225,11 @@ app.post('/render', upload.fields([{ name: 'video', maxCount: 1 }, { name: 'audi
       }
       cmd.videoFilters(vf).videoCodec('libx264').outputOptions(['-pix_fmt yuv420p']);
     }
+    // Configuración de bajo consumo de memoria: necesaria porque el plan
+    // gratuito de Railway tiene solo 1GB de RAM. Sin esto, videos de fuente
+    // en alta resolución (ej: 4K de celular) hacen que ffmpeg sea matado
+    // por el sistema (SIGKILL / OOM) antes de terminar.
+    cmd.outputOptions(['-preset ultrafast', '-threads 1', '-max_muxing_queue_size 1024']);
 
     cmd.output(outPath);
     await runFfmpeg(cmd);
@@ -271,6 +276,7 @@ app.post('/render-story', upload.fields([{ name: 'image', maxCount: 1 }, { name:
         .outputOptions(['-pix_fmt yuv420p', '-r 30'])
         .videoCodec('libx264')
         .noAudio()
+        .outputOptions(['-preset ultrafast', '-threads 1'])
         .output(clipPath);
       await runFfmpeg(cmd);
       clipPaths.push(clipPath);
@@ -354,3 +360,4 @@ app.post('/render-carousel', upload.fields([{ name: 'image', maxCount: 1 }]), as
 });
 
 app.listen(PORT, () => console.log(`Servidor de render escuchando en el puerto ${PORT}`));
+
