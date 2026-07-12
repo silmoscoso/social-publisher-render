@@ -37,7 +37,19 @@ const RENDERS_DIR = path.join(ROOT, 'public', 'renders');
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use('/renders', express.static(RENDERS_DIR, { maxAge: '1h' }));
+app.use(
+  '/renders',
+  express.static(RENDERS_DIR, {
+    maxAge: '1h',
+    // Fuerza la descarga en vez de abrir el archivo en el navegador.
+    // Sin esto, el atributo "download" del link no funciona para
+    // archivos de otro dominio (como Railway) — el navegador lo ignora
+    // y solo abre el video/imagen en una pestaña nueva.
+    setHeaders: (res, filePath) => {
+      res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
+    },
+  })
+);
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -360,4 +372,5 @@ app.post('/render-carousel', upload.fields([{ name: 'image', maxCount: 1 }]), as
 });
 
 app.listen(PORT, () => console.log(`Servidor de render escuchando en el puerto ${PORT}`));
+
 
